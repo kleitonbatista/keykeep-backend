@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  # Container da Aplicação Laravel 12
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: keykeep-app
+    container_name: keykeep-app
+    restart: unless-stopped
+    tty: true
+    user: "1000:1000"
+    environment:
+      SERVICE_NAME: app
+    volumes:
+      - .:/var/www
+    networks:
+      - keykeep-network
+
+  # Container do Servidor Web (Nginx)
+  web:
+    image: nginx:alpine
+    container_name: keykeep-web
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - .:/var/www
+      - ./docker/nginx:/etc/nginx/conf.d/
+    networks:
+      - keykeep-network
+    depends_on:
+      - app
+
+  # Banco de Dados Desacoplado
+  db:
+    image: mysql:8.0
+    container_name: keykeep-db
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: keykeep_db
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_USER: keykeep_user
+      MYSQL_PASSWORD: root123
+    volumes:
+      - keykeep-db-data:/var/lib/mysql
+    networks:
+      - keykeep-network
+
+networks:
+  keykeep-network:
+    driver: bridge
+
+volumes:
+  keykeep-db-data:
+    driver: local
