@@ -11,6 +11,29 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
+
+    public function me(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+       return response()->json([
+            'user' => $user
+        ], 200);
+    }
+
+    /**
+     * Revoga o token atual e encerra a sessão.
+     */
+    public function logout(Request $request): JsonResponse
+    {
+        // Apaga apenas o token que fez a requisição atual
+        $request->user()->currentAccessToken()->delete();
+
+        return response()->json([
+            'message' => 'Logout realizado com sucesso!'
+        ], 200);
+    }
+    
    public function login(LoginRequest $request): JsonResponse
     {
         $credentials = $request->validated();
