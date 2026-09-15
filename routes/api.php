@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CredentialController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\CategoryController; 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -13,7 +15,16 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
+
+    // Endpoints do Cofre de Credenciais
+    Route::get('/credentials', [CredentialController::class, 'index']);
+    Route::post('/credentials', [CredentialController::class, 'store']);
+    Route::get('/credentials/{id}', [CredentialController::class, 'show']);
+    Route::put('/credentials/{id}', [CredentialController::class, 'update']);
+    Route::delete('/credentials/{id}', [CredentialController::class, 'destroy']); 
+
 });
+Route::get('/categories',[CategoryController::class,'index']);
 
 // Rota de teste "Olá, Mundo!"
 Route::get('/hello', function () {
