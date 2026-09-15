@@ -36,30 +36,36 @@ class AuthController extends Controller
     
    public function login(LoginRequest $request): JsonResponse
     {
-        $credentials = $request->validated();
+       $credentials = $request->validate([
+            'email'    => 'required|email',
+            'password' => 'required',
+        ]);
 
-        // Buscar usuário pelo e-mail
         $user = User::where('email', $credentials['email'])->first();
 
-        // Verificar existência do usuário e validar o hash da senha
-        if (!$user || !Hash::check($credentials['password'], $user->password)) {
-            return Response()->json([
+        // 1. Valida se o usuário existe e a senha está correta
+        if (! $user || ! Hash::check($credentials['password'], $user->password)) {
+            return response()->json([
                 'message' => 'Credenciais inválidas. Verifique seu e-mail e senha.'
             ], 401);
         }
 
-        // Criar o token de acesso do Sanctum
+        // 2. Valida se o e-mail já foi verificado no banco
+        if (! $user->hasVerifiedEmail()) {
+            return response()->json([
+                'message' => 'Seu e-mail ainda não foi verificado. Por favor, acesse sua caixa de entrada para confirmar o seu cadastro antes de fazer login.'
+            ], 403);
+        }
+
+        // 3. Gera o token de acesso Sanctum se o e-mail estiver confirmado
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
             'message'      => 'Login realizado com sucesso!',
             'access_token' => $token,
             'token_type'   => 'Bearer',
-            'user'         => [
-                'id'    => $user->id,
-                'name'  => $user->name,
-                'email' => $user->email,
-            ]
+            'user'         => $user
         ], 200);
+    
     }
 }

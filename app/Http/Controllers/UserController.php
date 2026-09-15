@@ -22,6 +22,7 @@ class UserController extends Controller
         // Persistir o usuário no banco de dados
         $user = User::create($validatedData);
         //event(new Registered($user));
+        event(new Registered($user));
 
         return response()->json([
             'message' => 'Usuário cadastrado com sucesso!',
